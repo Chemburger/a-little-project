@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Information</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: white;
+      color: black;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .info {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>System Information</h1>
+  <div id="info"></div>
+
+  <script>
+    async function getIPData() {
+      try {
+        const response = await fetch("https://ipapi.co/json/");
+        const data = await response.json();
+        return {
+          ip: data.ip,
+          country: data.country_name,
+          city: data.city,
+          region: data.region,
+        };
+      } catch (error) {
+        console.error("Failed to fetch IP data:", error);
+        return {
+          ip: "Unavailable",
+          country: "Unavailable",
+          city: "Unavailable",
+          region: "Unavailable",
+        };
+      }
+    }
+
+    async function gatherSystemInfo() {
+      const ipData = await getIPData();
+      const screenResolution = `${window.screen.width}x${window.screen.height}`;
+      const windowDimensions = `${window.innerWidth}x${window.innerHeight}`;
+      const pixelDensity = window.devicePixelRatio;
+      const pixelDensityDescription = pixelDensity === 1 
+        ? "Standard Display (1x)" 
+        : pixelDensity === 2 
+        ? "High-DPI (Retina Display)"
+        : pixelDensity === 3
+        ? "Very High-DPI Display"
+        : "Unknown Pixel Density";
+
+      const browser = navigator.userAgent;
+      const operatingSystem = navigator.platform;
+      const cpuCores = navigator.hardwareConcurrency;
+      const memory = navigator.deviceMemory !== undefined ? `${navigator.deviceMemory} GB` : "Memory info not available";
+      const touchscreenSupport = navigator.maxTouchPoints > 0 ? "Yes" : "No";
+      const language = navigator.language;
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const localTime = new Date().toString();
+      const darkMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "Enabled" : "Disabled";
+
+      const info = `
+        <div class="info"><strong>Screen Resolution:</strong> ${screenResolution}</div>
+        <div class="info"><strong>Window Dimensions:</strong> ${windowDimensions}</div>
+        <div class="info"><strong>Pixel Density:</strong> ${pixelDensityDescription}</div>
+        <div class="info"><strong>Browser:</strong> ${browser}</div>
+        <div class="info"><strong>Operating System:</strong> ${operatingSystem}</div>
+        <div class="info"><strong>CPU Cores:</strong> ${cpuCores}</div>
+        <div class="info"><strong>Memory:</strong> ${memory}</div>
+        <div class="info"><strong>Touchscreen Support:</strong> ${touchscreenSupport}</div>
+        <div class="info"><strong>Language:</strong> ${language}</div>
+        <div class="info"><strong>Timezone:</strong> ${timezone}</div>
+        <div class="info"><strong>Local Time:</strong> ${localTime}</div>
+        <div class="info"><strong>Dark Mode Enabled:</strong> ${darkMode}</div>
+        <div class="info"><strong>IP Address:</strong> ${ipData.ip}</div>
+        <div class="info"><strong>Country:</strong> ${ipData.country}</div>
+        <div class="info"><strong>City:</strong> ${ipData.city}</div>
+        <div class="info"><strong>Region:</strong> ${ipData.region}</div>
+      `;
+
+      document.getElementById("info").innerHTML = info;
+    }
+
+    gatherSystemInfo();
+  </script>
+</body>
+</html>
